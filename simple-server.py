@@ -1,12 +1,38 @@
 from wsgiref.simple_server import make_server
 import json
+
 class Httpstatus:
-    OK="200 OK"
+    OK = "200 OK"
 
 class ContentType:
-    TEXT=('Content-Type', 'text/plain')
     JSON = ('Content-Type', 'application/json')
 
+Inventory= {
+    "mobile":[
+        {
+            "product id": 1,
+            "product name": "S25 ultra",
+            "brand": "Samsung"
+        },
+        {
+            "product id": 2,
+            "product name": "Iphone",
+            "brand": "Apple"
+        }
+    ],
+    "laptop":[
+       {
+            "product id": 1,
+            "product name": "Asus ROG",
+            "brand": "Asus"
+        },
+        {
+            "product id": 2,
+            "product name": "Dell XPS",
+            "brand": "Dell"
+        }
+    ]
+}
 
 def application(environ, start_response):
     # print("In my application")
@@ -21,20 +47,25 @@ def application(environ, start_response):
 
     # return [response_text.encode("utf-8")]
 
-    path=environ.get('PATH_INFO','/')
-    response_body=f"Responding from my application PATH : {path}"
-    data=[
-        {
-            "product_id":1,
-            "product_name":"Samsung"
-        },
-
-        {
-            "product_id":2,
-            "product_name":"Apple"
-        }
-    ]
+    path = environ.get('PATH_INFO', '/')
+    cleaned_path = path.strip('/')
     
+    # 2. Extract category, handling the root "/" homepage gracefully
+    category = cleaned_path.split('/')[-1] if cleaned_path else ""
+    
+
+    # 3. Routing Logic
+    if category in Inventory:
+        status = Httpstatus.OK
+        data = Inventory[category]
+    elif category == "":
+        status = Httpstatus.OK
+        data = {"message": "Welcome Home! Try visiting /Mobile or /Laptop"}
+    else:
+        status = "404 NOT FOUND"
+        data = {"error": f"Category '{category}' does not exist."}
+
+
     response_body=json.dumps(data)
 
     # set response status and headers
@@ -52,10 +83,9 @@ def application(environ, start_response):
 
 
 if __name__ == '__main__':
-    host='localhost'
-    port=8000
-    server= make_server(host, port, application)
+    host = 'localhost'
+    port = 8080
+    server = make_server(host, port, application)
     print(f"Listening on http://{host}:{port}")
     server.serve_forever()
-
 
