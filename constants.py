@@ -19,3 +19,9 @@ Inventory = {
         {"product id": 2, "product name": "Dell XPS", "brand": "Dell"}
     ]
 }
+
+products=[
+    {"product id": 1, "product name": "S25 ultra", "brand": "Samsung"},
+    {"product id": 2, "product name": "Iphone", "brand": "Apple"}
+    
+]

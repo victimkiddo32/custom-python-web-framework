@@ -4,32 +4,22 @@ from constants import Httpstatus, Inventory
 from helpers import JSONresponse
 from middleware import ErrorHandlerMiddleware
 from common_handlers import Handlers
+from router import RouteManager
 
 class Application:
     def __init__(self):
-        pass
-    def __call__(self,environ,start_response,*args,**kwargs):
-        path = environ.get('PATH_INFO', '/')
-        cleaned_path = path.strip('/')
-        category = cleaned_path.split('/')[-1] if cleaned_path else ""
+        self.routing_manager = RouteManager()
         
-        # Root URL check
-        if not category:
-            return JSONresponse(
-                {"message": "Welcome Home! Try visiting /mobile or /laptop"}, 
-                start_response, 
-                status=Httpstatus.OK
-            )
-            
-        if category in Inventory:
-            products = Inventory[category]
-            return JSONresponse(products, start_response, status=Httpstatus.OK)
-        
-       # Missing category handling
-        error_payload = {"error": f"Category '{category}' does not exist."}
-        return JSONresponse(error_payload, start_response, status=Httpstatus.NOT_FOUND)
-        
-        
+    def __call__(self,environ,start_response):
+        return self.routing_manager.dispatch(environ, start_response)    
+    
+    def route(self,path:str):
+        def decorator(handler:callable):
+            self.routing_manager.register_route(path,handler)
+            return handler
+        return decorator
+
+    
 app=Application()
 middleware = ErrorHandlerMiddleware(
     app=app,

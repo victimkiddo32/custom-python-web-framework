@@ -1,0 +1,6 @@
+Browser Request (GET /api/products)
+  └── wsgi-server.py
+       └── ErrorHandlerMiddleware  (Catches uncaught 500 exceptions)
+            └── Application        (Dispatches via RouteManager)
+                 └── product_controller.get_products()
+                      └── JSONresponse  (Returns application/json bytes)
