@@ -1,6 +1,6 @@
 from constants import Httpstatus, Inventory
 from helpers import JSONresponse
-
+from common_handlers import Handlers
 
 class RouteManager:
     def __init__(self):
@@ -28,5 +28,5 @@ class RouteManager:
         
         
         # Return 404 NOT FOUND when path is not registered
-        error_payload = {"error": f"Path '{raw_path}' not found."}
-        return JSONresponse(error_payload, start_response, status=Httpstatus.NOT_FOUND)
+        return Handlers.url_not_found_handler(environ, start_response)
+    

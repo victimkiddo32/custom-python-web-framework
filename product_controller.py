@@ -1,5 +1,5 @@
 from helpers import JSONresponse
-from constants import Httpstatus, products
+from constants import Httpstatus, products,Inventory
 from app import app
 
 @app.route("/api/products")
@@ -15,6 +15,17 @@ def get_products(environ, start_response):
 def home(environ, start_response):
     return JSONresponse(
         {"message": "Welcome Home! Try visiting /api/products"},
+        start_response,
+        status=Httpstatus.OK
+    )
+    
+    
+@app.route("/mobile")
+def get_mobiles(environ, start_response):
+    # Fetch mobiles directly from Inventory
+    mobiles = Inventory.get("mobile", [])
+    return JSONresponse(
+        mobiles,
         start_response,
         status=Httpstatus.OK
     )

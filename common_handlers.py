@@ -13,3 +13,15 @@ class Handlers:
             start_response=start_response,
             status=Httpstatus.INTERNAL_SERVER_ERROR
         )
+        
+    @staticmethod
+    def url_not_found_handler(environ, start_response) -> list[bytes]:
+        path=environ.get('PATH_INFO', '/')
+        response={
+            "message": f"Requested path {path} does not exist.Please check the URL and try again"
+        }
+        return JSONresponse(
+            response,
+            start_response,
+            status=Httpstatus.NOT_FOUND
+        )
