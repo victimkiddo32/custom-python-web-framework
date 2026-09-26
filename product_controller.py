@@ -1,31 +1,32 @@
+from webob import Request, Response
 from helpers import JSONresponse
-from constants import Httpstatus, products,Inventory
+from constants import Httpstatus, Inventory
 from app import app
 
 @app.route("/api/products")
-def get_products(environ, start_response):
+def get_products(request: Request) -> Response:
     return JSONresponse(
-        products,
-        start_response,
+        json_body=Inventory,
         status=Httpstatus.OK
-    )
-    
+    )    
 
 @app.route("/")
-def home(environ, start_response):
+def home(request: Request) -> Response:
     return JSONresponse(
-        {"message": "Welcome Home! Try visiting /api/products"},
-        start_response,
+        json_body={"message": "Welcome Home! Try visiting /api/products"},
         status=Httpstatus.OK
     )
     
-    
-@app.route("/mobile")
-def get_mobiles(environ, start_response):
-    # Fetch mobiles directly from Inventory
-    mobiles = Inventory.get("mobile", [])
+@app.route("/api/products/{category}")
+def get_products_by_category(request:Request, category: str) -> Response:
+    if category not in Inventory:
+        return JSONresponse(
+            json_body={"error": f"Category '{category}' not found in inventory."},
+            status=Httpstatus.NOT_FOUND
+        )
+        
     return JSONresponse(
-        mobiles,
-        start_response,
+        json_body=Inventory[category],
         status=Httpstatus.OK
     )
+    

@@ -5,7 +5,9 @@ class ErrorHandlerMiddleware:
 
     def __call__(self, environ, start_response):
         try:
+            print("Middleware is running")
             return self.app(environ,start_response)
         except Exception as e:
+            print(f"Exception occurred: {e}")
             return self.exception_handler(environ, start_response, e)
         
