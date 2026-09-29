@@ -1,3 +1,6 @@
+from requests import Request
+
+
 class ErrorHandlerMiddleware:
     def __init__(self, app, exception_handler:callable):
         self.app = app
@@ -9,5 +12,7 @@ class ErrorHandlerMiddleware:
             return self.app(environ,start_response)
         except Exception as e:
             print(f"Exception occurred: {e}")
-            return self.exception_handler(environ, start_response, e)
+            request = Request(environ)
+            response = self.exception_handler(request, e)
+            return response(environ, start_response)
         

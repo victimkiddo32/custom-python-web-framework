@@ -1,8 +1,11 @@
+from importlib.resources import path
+
 from constants import Httpstatus, Inventory
 from helpers import JSONresponse
 from common_handlers import Handlers
 from parse import parse
 from webob import Request, Response
+import inspect
 
 class RouteManager:
     def __init__(self):
@@ -10,9 +13,13 @@ class RouteManager:
         
     # Standardize path to always have a leading slash: "/api/products"   
     def normalized_path(self, path: str) -> str:
-        clean_path = path.strip().rstrip("/")
-        return clean_path if clean_path else "/"
-        
+        clean_path = path.strip().rstrip('/')
+        if not clean_path.startswith('/'):
+          clean_path = '/' + clean_path
+        return clean_path if clean_path else '/'    
+    
+    
+
     def register_route(self, path: str, handler: callable) -> None:
         requested_path = self.normalized_path(path)
         if requested_path in self.routes:
@@ -37,17 +44,32 @@ class RouteManager:
     #requested_path = "/api/products/mobile"
     #parse_result.named becomes {'category': 'mobile'}
 
-
-
-
+    
+    def get_class_based_handler(self,request:Request, handler_class)->callable:
+        handler_instance=handler_class()
+        method=request.method.lower()
+        handler_func=getattr(
+            handler_instance,
+            method,
+            None
+            )
+        if handler_func is None:
+            return Handlers.method_not_allowed_handler(request)
+        return handler_func
+        
+    
+    
+    
     #dispatch method to handle incoming requests based on the path   
     def dispatch(self, http_request: Request) -> Response:
         # 1. Look up the matching controller function and dynamic path kwargs
         requested_path = self.normalized_path(http_request.path)
         handler, kwargs = self._find_handler(requested_path)
+        
+        if handler is None:
+            return Handlers.url_not_found_handler(http_request)
     
-        #if a matching route was found, execute it with kwargs unpacked
-        if handler is not None:
-            return handler(http_request, **kwargs)
+        if inspect.isclass(handler):
+            handler=self.get_class_based_handler(http_request, handler)
     
-        return Handlers.url_not_found_handler(http_request)
+        return handler(http_request, **kwargs) 
